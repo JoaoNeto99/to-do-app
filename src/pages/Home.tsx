@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 
 import {Header} from '../components/Header';
 import {Task, TasksList} from '../components/TasksList';
@@ -9,6 +9,15 @@ export function Home() {
     const [tasks, setTasks] = useState<Task[]>([]);
 
     function handleAddTask(newTaskTitle: string) {
+        const taskAlreadyExist = tasks.find((task) => task.title === newTaskTitle)
+        if (taskAlreadyExist) {
+            Alert.alert(
+                "Atenção",
+                "Esta tarefa já existe, mude seu titulo",
+                [{text: 'Ok', onPress: () => console.log('ok')}]
+            )
+            return;
+        }
         const newTask: Task = {id: new Date().getTime(), title: newTaskTitle, done: false}
         setTasks([...tasks, newTask])
     }
@@ -26,8 +35,30 @@ export function Home() {
     }
 
     function handleRemoveTask(id: number) {
-        const updatedTasks = tasks.filter((task) => {
-            if (task.id != id) return task
+        Alert.alert(
+            "Atenção",
+            "Você deseja mesmo excluir esta tarefa?",
+            [
+                {text: 'Sim', onPress: () => removetask()},
+                {text: 'Não', onPress: () => console.log('cancelar'), style: "cancel"}
+            ]
+        )
+
+        function removetask() {
+            const updatedTasks = tasks.filter((task) => {
+                if (task.id != id) return task
+            })
+
+            setTasks(updatedTasks)
+        }
+    }
+
+    function handleSubmitEditing(id: number, newTitle: string) {
+        const updatedTasks = tasks.map((item) => {
+            if (item.id === id) {
+                item.title = newTitle;
+            }
+            return item
         })
 
         setTasks(updatedTasks)
@@ -43,6 +74,7 @@ export function Home() {
                 tasks={tasks}
                 toggleTaskDone={handleToggleTaskDone}
                 removeTask={handleRemoveTask}
+                editTask={handleSubmitEditing}
             />
         </View>
     )
